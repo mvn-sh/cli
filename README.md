@@ -11,7 +11,7 @@ The official command-line client for [mvn.sh](https://mvn.sh). It installs an au
 ### Installer (Linux and macOS)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mvn-sh/cli/main/install.sh | sh
+curl -fsSL https://github.com/mvn-sh/cli/raw/refs/heads/main/install.sh | sh
 ```
 
 The installer verifies the release checksum and places `mvnsh` in `~/.local/bin`. Set `MVNSH_INSTALL_DIR` to choose another directory.
@@ -21,7 +21,7 @@ The installer verifies the release checksum and places `mvnsh` in `~/.local/bin`
 Download the MSI package from [GitHub Releases](https://github.com/mvn-sh/cli/releases), or install from PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/mvn-sh/cli/main/install.ps1 | iex
+irm https://github.com/mvn-sh/cli/raw/refs/heads/main/install.ps1 | iex
 ```
 
 Both Windows installers add `mvnsh` to your `PATH`.
