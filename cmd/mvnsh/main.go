@@ -13,20 +13,36 @@ import (
 	"golang.org/x/term"
 )
 
-var slugPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$`)
+var (
+	version     = "dev"
+	slugPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$`)
+)
 
 func main() {
-	if len(os.Args) < 2 || os.Args[1] != "login" {
+	if len(os.Args) < 2 {
 		usage()
 		os.Exit(2)
 	}
-	if err := login(os.Args[2:]); err != nil {
+	var err error
+	switch os.Args[1] {
+	case "login":
+		err = login(os.Args[2:])
+	case "update":
+		err = update()
+	case "version", "--version", "-v":
+		fmt.Println("mvnsh", version)
+		return
+	default:
+		usage()
+		os.Exit(2)
+	}
+	if err != nil {
 		fmt.Fprintln(os.Stderr, "mvnsh:", err)
 		os.Exit(1)
 	}
 }
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: mvnsh login [--team TEAM] [--repository REPOSITORY] [--settings PATH]\n\nInstalls an authenticated mvn.sh profile in Maven settings.xml.")
+	fmt.Fprintln(os.Stderr, "Usage: mvnsh <login|update|version>\n\n  login    Authorize and install a Maven profile\n  update   Update mvnsh to the latest release\n  version  Print the installed version")
 }
 func login(args []string) error {
 	home, err := os.UserHomeDir()

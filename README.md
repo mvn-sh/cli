@@ -8,6 +8,24 @@ The official command-line client for [mvn.sh](https://mvn.sh). It installs an au
 
 ## Install
 
+### Installer (Linux and macOS)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mvn-sh/cli/main/install.sh | sh
+```
+
+The installer verifies the release checksum and places `mvnsh` in `~/.local/bin`. Set `MVNSH_INSTALL_DIR` to choose another directory.
+
+### Windows
+
+Download the MSI package from [GitHub Releases](https://github.com/mvn-sh/cli/releases), or install from PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/mvn-sh/cli/main/install.ps1 | iex
+```
+
+Both Windows installers add `mvnsh` to your `PATH`.
+
 ### Go
 
 ```bash
@@ -39,6 +57,12 @@ MVN_TOKEN='mvn_…' mvnsh login --team acme --repository releases
 ```
 
 Run `mvnsh login -h` for all options, including custom Maven settings and profile paths.
+
+Update an installed release at any time:
+
+```bash
+mvnsh update
+```
 
 ## Local development
 

@@ -25,3 +25,32 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows-msi:
+    needs: release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build Windows binary
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          go build -trimpath -ldflags "-s -w -X main.version=$version" -o mvnsh.exe ./cmd/mvnsh
+      - name: Install WiX
+        run: dotnet tool install --global wix --version 5.0.2
+      - name: Build MSI
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          wix build installer/windows/Package.wxs -arch x64 -d Version=$version -d Binary="$PWD/mvnsh.exe" -o "mvnsh_${version}_windows_amd64.msi"
+      - name: Upload MSI
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          gh release upload "${{ github.ref_name }}" "mvnsh_${version}_windows_amd64.msi" --clobber
