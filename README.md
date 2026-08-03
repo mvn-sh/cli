@@ -1,4 +1,8 @@
-# mvn.sh CLI
+<p align="center">
+  <img src="assets/logo.svg" width="128" alt="mvn.sh logo">
+</p>
+
+<h1 align="center">mvn.sh CLI</h1>
 
 The official command-line client for [mvn.sh](https://mvn.sh). It installs an authenticated mvn.sh repository profile in Maven's `settings.xml`.
 
