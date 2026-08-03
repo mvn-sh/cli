@@ -40,7 +40,7 @@ func login(args []string) error {
 	settings := flags.String("settings", filepath.Join(home, ".m2", "settings.xml"), "Maven settings path")
 	baseURL := flags.String("base-url", "https://%s.mvn.sh", "team URL format")
 	apiURL := flags.String("api-url", "https://api.mvn.sh", "mvn.sh API URL")
-	appURL := flags.String("app-url", "https://app.mvn.sh", "mvn.sh browser application URL")
+	appURL := flags.String("app-url", "https://mvn.sh", "mvn.sh browser application URL")
 	tokenFlag := flags.String("token", "", "access token (prefer MVN_TOKEN or the secure prompt)")
 	if err := flags.Parse(args); err != nil {
 		return err
