@@ -1,20 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
   <title id="title">mvn.sh logo</title>
-  <desc id="desc">A Maven-inspired M built into an open package</desc>
+  <desc id="desc">An artifact package with an upward publishing arrow</desc>
   <defs>
-    <linearGradient id="bg" x1="128" y1="96" x2="896" y2="928" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#171A22"/>
-      <stop offset="1" stop-color="#08090D"/>
+    <linearGradient id="bg" x1="112" y1="80" x2="912" y2="944" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B1E27"/>
+      <stop offset="1" stop-color="#090A0F"/>
     </linearGradient>
-    <linearGradient id="accent" x1="256" y1="258" x2="768" y2="766" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF7043"/>
-      <stop offset="1" stop-color="#E53935"/>
+    <linearGradient id="accent" x1="392" y1="390" x2="632" y2="730" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF8A65"/>
+      <stop offset="1" stop-color="#FF4F3D"/>
     </linearGradient>
   </defs>
   <rect x="48" y="48" width="928" height="928" rx="224" fill="url(#bg)"/>
-  <path d="M208 354 512 194l304 160-304 160-304-160Z" fill="none" stroke="#F5F7FA" stroke-width="52" stroke-linejoin="round"/>
-  <path d="M208 354v320l304 160 304-160V354" fill="none" stroke="#F5F7FA" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M512 514v320" fill="none" stroke="#F5F7FA" stroke-width="52" stroke-linecap="round"/>
-  <path d="m326 638 66-172 120 86 120-86 66 172" fill="none" stroke="url(#accent)" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="512" cy="552" r="28" fill="#FF5A45"/>
+  <path d="m214 370 298-158 298 158-298 158-298-158Z" fill="none" stroke="#F5F7FA" stroke-width="48" stroke-linejoin="round"/>
+  <path d="M214 370v310l298 158 298-158V370M512 528v310" fill="none" stroke="#F5F7FA" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M512 704V438m0 0-94 94m94-94 94 94" fill="none" stroke="url(#accent)" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
