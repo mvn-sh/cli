@@ -28,6 +28,29 @@ func TestInstallProfileCreatesAndUpdatesManagedProfile(t *testing.T) {
 		t.Fatal("existing settings were discarded")
 	}
 }
+func TestInstallProfilePreservesCredentialsForOtherRepositories(t *testing.T) {
+	input := []byte("<settings></settings>")
+	releases, err := installProfile(input, "mvn-sh-acme-releases", "https://acme.mvn.sh/releases", "mvn_releases")
+	if err != nil {
+		t.Fatal(err)
+	}
+	both, err := installProfile(releases, "mvn-sh-acme-snapshots", "https://acme.mvn.sh/snapshots", "mvn_snapshots")
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(both)
+	for _, expected := range []string{
+		"<server><id>mvn-sh-acme-releases</id>",
+		"<server><id>mvn-sh-acme-snapshots</id>",
+		"mvn_releases",
+		"mvn_snapshots",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("missing %q after installing both repositories: %s", expected, text)
+		}
+	}
+}
+
 func TestInstallProfileRejectsInvalidSettings(t *testing.T) {
 	if _, err := installProfile([]byte("<settings>"), "profile", "url", "token"); err == nil {
 		t.Fatal("expected invalid XML to fail")

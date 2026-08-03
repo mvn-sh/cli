@@ -52,7 +52,7 @@ func login(args []string) error {
 	flags := flag.NewFlagSet("login", flag.ContinueOnError)
 	team := flags.String("team", "", "team slug (interactive when omitted)")
 	repository := flags.String("repository", "", "repository slug (interactive when omitted)")
-	profile := flags.String("profile", "", "Maven profile ID (default: mvn-sh-TEAM)")
+	profile := flags.String("profile", "", "Maven profile ID (default: mvn-sh-TEAM-REPOSITORY)")
 	settings := flags.String("settings", filepath.Join(home, ".m2", "settings.xml"), "Maven settings path")
 	baseURL := flags.String("base-url", "https://%s.mvn.sh", "team URL format")
 	apiURL := flags.String("api-url", "https://api.mvn.sh", "mvn.sh API URL")
@@ -117,7 +117,9 @@ func login(args []string) error {
 		return errors.New("team and repository must be valid slugs")
 	}
 	if *profile == "" {
-		*profile = "mvn-sh-" + *team
+		// Credentials are scoped to a repository, so each repository needs its
+		// own server ID. This lets releases and snapshots coexist in settings.xml.
+		*profile = "mvn-sh-" + *team + "-" + *repository
 	}
 	url := fmt.Sprintf(*baseURL, *team) + "/" + *repository
 	content, err := readSettings(*settings)

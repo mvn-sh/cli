@@ -48,7 +48,7 @@ The CLI opens mvn.sh in your browser. Sign in, choose a team and repository, and
 - a repository and plugin repository profile;
 - an active-profile entry.
 
-Existing Maven configuration is retained. Managed entries are marked with `mvnsh:` comments and replaced on subsequent logins. The original file is copied to `~/.m2/settings.xml.bak`, and the resulting settings file is restricted to the current user.
+Existing Maven configuration is retained. Each repository gets a distinct server and profile ID (for example, `mvn-sh-acme-releases` and `mvn-sh-acme-snapshots`), so logging into one repository does not overwrite another repository's credentials. Managed entries are marked with `mvnsh:` comments and only the matching repository entry is replaced on subsequent logins. The original file is copied to `~/.m2/settings.xml.bak`, and the resulting settings file is restricted to the current user.
 
 For automation, provide an existing scoped token:
 
