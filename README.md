@@ -7,7 +7,7 @@ The official command-line client for [mvn.sh](https://mvn.sh). It installs an au
 ### Go
 
 ```bash
-go install github.com/mvn-sh/cli@latest
+go install github.com/mvn-sh/cli/cmd/mvnsh@latest
 ```
 
 ### Release archive
@@ -40,7 +40,7 @@ Run `mvnsh login -h` for all options, including custom Maven settings and profil
 
 ```bash
 go test ./...
-go build -o bin/mvnsh .
+go build -o bin/mvnsh ./cmd/mvnsh
 ```
 
 To use a local mvn.sh stack:

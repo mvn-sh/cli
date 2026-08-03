@@ -3,7 +3,7 @@ version: 2
 project_name: mvnsh
 
 builds:
-  - main: .
+  - main: ./cmd/mvnsh
     binary: mvnsh
     env:
       - CGO_ENABLED=0
