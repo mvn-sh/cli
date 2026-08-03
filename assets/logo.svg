@@ -1,18 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
   <title id="title">mvn.sh logo</title>
-  <desc id="desc">An artifact package with an upward publishing arrow</desc>
+  <desc id="desc">A simple artifact package</desc>
   <defs>
     <linearGradient id="bg" x1="112" y1="80" x2="912" y2="944" gradientUnits="userSpaceOnUse">
       <stop stop-color="#1B1E27"/>
       <stop offset="1" stop-color="#090A0F"/>
     </linearGradient>
-    <linearGradient id="accent" x1="392" y1="390" x2="632" y2="730" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF8A65"/>
-      <stop offset="1" stop-color="#FF4F3D"/>
-    </linearGradient>
   </defs>
   <rect x="48" y="48" width="928" height="928" rx="224" fill="url(#bg)"/>
-  <path d="m214 370 298-158 298 158-298 158-298-158Z" fill="none" stroke="#F5F7FA" stroke-width="48" stroke-linejoin="round"/>
-  <path d="M214 370v310l298 158 298-158V370M512 528v310" fill="none" stroke="#F5F7FA" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M512 704V438m0 0-94 94m94-94 94 94" fill="none" stroke="url(#accent)" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m214 370 298-158 298 158-298 158-298-158Z" fill="none" stroke="#F5F7FA" stroke-width="52" stroke-linejoin="round"/>
+  <path d="M214 370v310l298 158 298-158V370M512 528v310" fill="none" stroke="#F5F7FA" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
