@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -53,20 +52,11 @@ func login(args []string) error {
 		token = strings.TrimSpace(os.Getenv("MVN_TOKEN"))
 	}
 	if token == "" {
-		if !term.IsTerminal(int(os.Stdin.Fd())) {
-			raw, readErr := io.ReadAll(io.LimitReader(os.Stdin, 4096))
-			if readErr != nil {
-				return readErr
-			}
-			token = strings.TrimSpace(string(raw))
+		credentials, loginErr := browserLogin(*appURL)
+		if loginErr != nil {
+			return loginErr
 		}
-		if token == "" {
-			credentials, loginErr := browserLogin(*appURL)
-			if loginErr != nil {
-				return loginErr
-			}
-			token, *team, *repository = credentials.Token, credentials.Team, credentials.Repository
-		}
+		token, *team, *repository = credentials.Token, credentials.Team, credentials.Repository
 	}
 	if !strings.HasPrefix(token, "mvn_") {
 		return errors.New("invalid access token")

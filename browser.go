@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"os/exec"
 	"runtime"
 	"time"
@@ -65,14 +66,39 @@ func browserLogin(appURL string) (browserCredentials, error) {
 	}
 }
 func openBrowser(target string) error {
-	var command *exec.Cmd
+	commands := browserCommands(target)
+	var lastErr error
+	for _, command := range commands {
+		if _, err := exec.LookPath(command[0]); err != nil {
+			lastErr = err
+			continue
+		}
+		if err := exec.Command(command[0], command[1:]...).Run(); err == nil {
+			return nil
+		} else {
+			lastErr = err
+		}
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("no browser opener is available")
+	}
+	return lastErr
+}
+
+func browserCommands(target string) [][]string {
+	if browser := os.Getenv("BROWSER"); browser != "" {
+		return append([][]string{{browser, target}}, platformBrowserCommands(target)...)
+	}
+	return platformBrowserCommands(target)
+}
+
+func platformBrowserCommands(target string) [][]string {
 	switch runtime.GOOS {
 	case "darwin":
-		command = exec.Command("open", target)
+		return [][]string{{"open", target}}
 	case "windows":
-		command = exec.Command("rundll32", "url.dll,FileProtocolHandler", target)
+		return [][]string{{"rundll32", "url.dll,FileProtocolHandler", target}}
 	default:
-		command = exec.Command("xdg-open", target)
+		return [][]string{{"xdg-open", target}, {"gio", "open", target}, {"sensible-browser", target}}
 	}
-	return command.Start()
 }
