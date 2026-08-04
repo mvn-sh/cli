@@ -75,10 +75,11 @@ func TestConfigureProjectUpdatesMavenProject(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := string(configured)
-	if strings.Count(text, "<id>mvn-sh-acme-releases</id>") != 1 {
-		t.Fatalf("expected one configured repository, got: %s", text)
+	if strings.Count(text, "<!-- mvnsh:project-repository-mvn-sh-acme-releases:start -->") != 1 ||
+		strings.Count(text, "<!-- mvnsh:distribution-management-mvn-sh-acme-releases:start -->") != 1 {
+		t.Fatalf("expected one managed repository and distribution configuration, got: %s", text)
 	}
-	if !strings.Contains(text, "<url>https://acme.mvn.sh/releases</url>") {
+	if !strings.Contains(text, "<distributionManagement>") || !strings.Contains(text, "<url>https://acme.mvn.sh/releases</url>") {
 		t.Fatalf("configured repository URL is missing: %s", text)
 	}
 	info, err := os.Stat(path)
@@ -101,7 +102,9 @@ func TestConfigurePOMPreservesProjectAndIsIdempotent(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := string(second)
-	if strings.Count(text, "<id>mvn-sh-acme-releases</id>") != 1 || !strings.Contains(text, "<id>central</id>") {
+	if strings.Count(text, "<!-- mvnsh:project-repository-mvn-sh-acme-releases:start -->") != 1 ||
+		strings.Count(text, "<!-- mvnsh:distribution-management-mvn-sh-acme-releases:start -->") != 1 ||
+		!strings.Contains(text, "<id>central</id>") {
 		t.Fatalf("unexpected configured POM: %s", text)
 	}
 	var root struct{ XMLName xml.Name }
@@ -120,7 +123,9 @@ func TestConfigureGradleUsesEnvironmentCredential(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := string(second)
-	if strings.Count(text, "name = 'mvn-sh-acme-releases'") != 1 || !strings.Contains(text, "environmentVariable('MVN_TOKEN')") {
+	if strings.Count(text, "<!-- mvnsh:project-repository-mvn-sh-acme-releases:start -->") != 1 ||
+		strings.Count(text, "<!-- mvnsh:distribution-management-mvn-sh-acme-releases:start -->") != 1 ||
+		!strings.Contains(text, "publishing {") || !strings.Contains(text, "environmentVariable('MVN_TOKEN')") {
 		t.Fatalf("unexpected configured Gradle file: %s", text)
 	}
 }

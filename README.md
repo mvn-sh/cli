@@ -61,10 +61,10 @@ Run `mvnsh login -h` for all options, including custom Maven settings and profil
 Add the repository to the Maven `pom.xml`, Gradle `build.gradle`, or Gradle Kotlin DSL `build.gradle.kts` in the current project:
 
 ```bash
-mvnsh configure --team acme --repository releases
+mvnsh configure
 ```
 
-The command follows each build tool's repository syntax, preserves existing repositories, and is safe to run repeatedly. Maven resolves credentials from the server installed by `mvnsh login` (the repository IDs match by default). Gradle reads its password from `MVN_TOKEN`, keeping credentials out of source control. Use `--project` for another directory, `--type` to select a build tool explicitly, or `--id` to override the repository ID.
+The command interactively opens mvn.sh to select a team and repository when they are omitted. It configures both dependency resolution and distribution/publishing, follows each build tool's syntax, preserves existing repositories, and is safe to run repeatedly. Maven resolves credentials from the server installed by `mvnsh login` (the repository IDs match by default). Gradle reads its publishing password from `MVN_TOKEN`, keeping credentials out of source control. For automation, pass `--team` and `--repository`. Use `--project` for another directory, `--type` to select a build tool explicitly, or `--id` to override the repository ID.
 
 Update an installed release at any time:
 

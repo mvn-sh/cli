@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/term"
 )
 
 func configureProject(args []string) error {
@@ -18,13 +20,63 @@ func configureProject(args []string) error {
 	kind := flags.String("type", "auto", "project type: auto, maven, or gradle")
 	id := flags.String("id", "", "repository ID (default: mvn-sh-TEAM-REPOSITORY)")
 	baseURL := flags.String("base-url", "https://%s.mvn.sh", "team URL format")
+	apiURL := flags.String("api-url", "https://api.mvn.sh", "mvn.sh API URL")
+	appURL := flags.String("app-url", "https://mvn.sh", "mvn.sh browser application URL")
+	tokenFlag := flags.String("token", "", "access token used to select a repository (prefer MVN_TOKEN)")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
 	*team = strings.ToLower(strings.TrimSpace(*team))
 	*repository = strings.ToLower(strings.TrimSpace(*repository))
+	if *team == "" || *repository == "" {
+		if !term.IsTerminal(int(os.Stdin.Fd())) {
+			return errors.New("--team and --repository are required without an interactive terminal")
+		}
+		token := strings.TrimSpace(*tokenFlag)
+		if token == "" {
+			token = strings.TrimSpace(os.Getenv("MVN_TOKEN"))
+		}
+		if token == "" {
+			credentials, loginErr := browserLogin(*appURL)
+			if loginErr != nil {
+				return loginErr
+			}
+			*team, *repository = credentials.Team, credentials.Repository
+		} else {
+			teams, contextErr := loadContext(*apiURL, token)
+			if contextErr != nil {
+				return contextErr
+			}
+			if *team == "" {
+				choices := make([]choice, 0, len(teams))
+				for _, item := range teams {
+					choices = append(choices, choice{label: item.Name + " (" + item.Slug + ")", value: item.Slug})
+				}
+				*team, contextErr = selectChoice("Select a team", choices)
+				if contextErr != nil {
+					return contextErr
+				}
+			}
+			if *repository == "" {
+				var choices []choice
+				for _, item := range teams {
+					if item.Slug == *team {
+						for _, repo := range item.Repositories {
+							choices = append(choices, choice{label: repo.Name + " · " + repo.Visibility, value: repo.Slug})
+						}
+					}
+				}
+				*repository, contextErr = selectChoice("Select a repository", choices)
+				if contextErr != nil {
+					return contextErr
+				}
+			}
+		}
+	}
+	*team = strings.ToLower(strings.TrimSpace(*team))
+	*repository = strings.ToLower(strings.TrimSpace(*repository))
 	if !slugPattern.MatchString(*team) || !slugPattern.MatchString(*repository) {
-		return errors.New("--team and --repository must be valid slugs")
+		return errors.New("team and repository must be valid slugs")
 	}
 	if *id == "" {
 		*id = "mvn-sh-" + *team + "-" + *repository
@@ -84,15 +136,19 @@ func configurePOM(input []byte, id, url string) ([]byte, error) {
 		return nil, fmt.Errorf("invalid pom.xml: %w", err)
 	}
 	text := removeManaged(string(input), "project-repository-"+safeID(id))
+	text = removeManaged(text, "distribution-management-"+safeID(id))
 	entry := managed("project-repository-"+safeID(id), "<repository><id>"+escape(id)+"</id><url>"+escape(url)+"</url><releases><enabled>true</enabled></releases><snapshots><enabled>true</enabled></snapshots></repository>")
+	distribution := managed("distribution-management-"+safeID(id), "<distributionManagement><repository><id>"+escape(id)+"</id><url>"+escape(url)+"</url></repository><snapshotRepository><id>"+escape(id)+"</id><url>"+escape(url)+"</url></snapshotRepository></distributionManagement>")
+	projectClose := strings.LastIndex(text, "</project>")
+	if projectClose < 0 {
+		return nil, errors.New("pom.xml has no closing project element")
+	}
+	text = text[:projectClose] + distribution + text[projectClose:]
 	close := "</repositories>"
 	if index := strings.LastIndex(text, close); index >= 0 {
 		return []byte(text[:index] + entry + text[index:]), nil
 	}
 	index := strings.LastIndex(text, "</project>")
-	if index < 0 {
-		return nil, errors.New("pom.xml has no closing project element")
-	}
 	return []byte(text[:index] + "\n  <repositories>" + entry + "  </repositories>\n" + text[index:]), nil
 }
 
@@ -105,7 +161,14 @@ func configureGradle(input []byte, id, url string, kotlin bool) ([]byte, error) 
 	} else {
 		repository = "repositories {\n    maven {\n        name = '" + gradleEscape(id) + "'\n        url = uri('" + gradleEscape(url) + "')\n        credentials {\n            username = 'token'\n            password = providers.environmentVariable('MVN_TOKEN').orNull\n        }\n    }\n}"
 	}
-	return []byte(strings.TrimRight(text, "\n") + "\n" + managed(key, repository)), nil
+	var publishing string
+	if kotlin {
+		publishing = "publishing {\n    repositories {\n        maven {\n            name = \"" + gradleEscape(id) + "\"\n            url = uri(\"" + gradleEscape(url) + "\")\n            credentials {\n                username = \"token\"\n                password = providers.environmentVariable(\"MVN_TOKEN\").orNull\n            }\n        }\n    }\n}"
+	} else {
+		publishing = "publishing {\n    repositories {\n        maven {\n            name = '" + gradleEscape(id) + "'\n            url = uri('" + gradleEscape(url) + "')\n            credentials {\n                username = 'token'\n                password = providers.environmentVariable('MVN_TOKEN').orNull\n            }\n        }\n    }\n}"
+	}
+	text = removeManaged(text, "distribution-management-"+safeID(id))
+	return []byte(strings.TrimRight(text, "\n") + "\n" + managed(key, repository) + managed("distribution-management-"+safeID(id), publishing)), nil
 }
 
 func gradleEscape(value string) string {
