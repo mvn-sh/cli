@@ -29,6 +29,8 @@ func main() {
 		err = login(os.Args[2:])
 	case "update":
 		err = update()
+	case "configure":
+		err = configureProject(os.Args[2:])
 	case "version", "--version", "-v":
 		fmt.Println("mvnsh", version)
 		return
@@ -42,7 +44,7 @@ func main() {
 	}
 }
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: mvnsh <login|update|version>\n\n  login    Authorize and install a Maven profile\n  update   Update mvnsh to the latest release\n  version  Print the installed version")
+	fmt.Fprintln(os.Stderr, "Usage: mvnsh <login|configure|update|version>\n\n  login      Authorize and install a Maven profile\n  configure  Add mvn.sh to the current Maven or Gradle project\n  update     Update mvnsh to the latest release\n  version    Print the installed version")
 }
 func login(args []string) error {
 	home, err := os.UserHomeDir()

@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/xml"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -48,6 +50,78 @@ func TestInstallProfilePreservesCredentialsForOtherRepositories(t *testing.T) {
 		if !strings.Contains(text, expected) {
 			t.Fatalf("missing %q after installing both repositories: %s", expected, text)
 		}
+	}
+}
+
+func TestConfigureProjectUpdatesMavenProject(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "pom.xml")
+	input := []byte(`<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion></project>`)
+	if err := os.WriteFile(path, input, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	args := []string{"--project", dir, "--team", "acme", "--repository", "releases"}
+	if err := configureProject(args); err != nil {
+		t.Fatal(err)
+	}
+	// Running the command again must update its managed entry, not duplicate it.
+	if err := configureProject(args); err != nil {
+		t.Fatal(err)
+	}
+
+	configured, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(configured)
+	if strings.Count(text, "<id>mvn-sh-acme-releases</id>") != 1 {
+		t.Fatalf("expected one configured repository, got: %s", text)
+	}
+	if !strings.Contains(text, "<url>https://acme.mvn.sh/releases</url>") {
+		t.Fatalf("configured repository URL is missing: %s", text)
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm() != 0644 {
+		t.Fatalf("build file permissions changed: mode=%v", info.Mode().Perm())
+	}
+}
+
+func TestConfigurePOMPreservesProjectAndIsIdempotent(t *testing.T) {
+	input := []byte(`<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><repositories><repository><id>central</id></repository></repositories></project>`)
+	first, err := configurePOM(input, "mvn-sh-acme-releases", "https://acme.mvn.sh/releases")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := configurePOM(first, "mvn-sh-acme-releases", "https://acme.mvn.sh/releases")
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(second)
+	if strings.Count(text, "<id>mvn-sh-acme-releases</id>") != 1 || !strings.Contains(text, "<id>central</id>") {
+		t.Fatalf("unexpected configured POM: %s", text)
+	}
+	var root struct{ XMLName xml.Name }
+	if err = xml.Unmarshal(second, &root); err != nil || root.XMLName.Local != "project" {
+		t.Fatalf("invalid configured POM: %v", err)
+	}
+}
+
+func TestConfigureGradleUsesEnvironmentCredential(t *testing.T) {
+	first, err := configureGradle([]byte("plugins { id 'java' }\n"), "mvn-sh-acme-releases", "https://acme.mvn.sh/releases", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := configureGradle(first, "mvn-sh-acme-releases", "https://acme.mvn.sh/releases", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(second)
+	if strings.Count(text, "name = 'mvn-sh-acme-releases'") != 1 || !strings.Contains(text, "environmentVariable('MVN_TOKEN')") {
+		t.Fatalf("unexpected configured Gradle file: %s", text)
 	}
 }
 
